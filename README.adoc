@@ -1,0 +1,64 @@
+= Simple JEL
+
+Java Expression Language evaluator generators.
+It generates java class from expressions in custom annotations.
+
+== Define A custom annotation
+
+A Simple JEL annotation must be marked with `@MetaJel`.
+It will enable you to define the evaluation context type, expected returned type and optional marker to put on the evaluator.
+
+Here is an example:
+
+[source,java]
+----
+import com.github.rmannibucau.jel.api.annotation.MetaJel;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+@MetaJel(
+        expressionElementName = "value",
+        contextType = "com.custom.framework.SecurityContent",
+        returnType = "boolean",
+        evaluatorMarkers = "com.custom.framework.ApplicationScoped")
+@Retention(RUNTIME)
+@Target(METHOD)
+public @interface SecuredBy {
+    String value();
+}
+----
+
+The compilation - if the annotation processor is not excluded - will produce a file per method annotation with `@SecuredBy`.
+For example:
+
+[source,java]
+----
+public class MyService {
+    @SecuredBy("return context.getPrincipal() != null && context.getPrincipal().getName().equals(\"admin\")")
+    public List<Data> findAdminData() {
+        // ...
+    }
+}
+----
+
+If you have an IoC in place you can intercept the method and handle the validation with such a code:
+
+[source,java]
+----
+// this part can be cached in general
+final String prefix = MyService.class.getName() + "$findAdminData"; // from interception context in general
+final ClassLoader loader = ...;
+final Class<? extends Evaluator<SecurityContext, Boolean>> evaluatorClass =
+    loader.loadClass(prefix + "$SimpleJelEvaluator").asSubclass(Evaluator.class);
+// now either you just create a new instance as in this snippet or you lookup the bean from your
+// spring context, CDI context etc...
+final Evaluator<SecurityContext, Boolean> evaluator = evaluatorClass.getConstructor().newInstance();
+
+// runtime/interceptor evaluation
+if (!evaluator.evaluate(getSecurityContext())) {
+    // fail
+}
+----
