@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <artifactId>simple-jel</artifactId>
-    <groupId>org.example</groupId>
+    <groupId>com.github.rmannibucau.jel</groupId>
     <version>1.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
@@ -39,10 +39,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <proc>only</proc>
-          <annotationProcessors>
-            <annotationProcessor>lombok.launch.AnnotationProcessorHider$AnnotationProcessor</annotationProcessor>
-          </annotationProcessors>
+          <proc>none</proc>
         </configuration>
       </plugin>
     </plugins>
